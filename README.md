@@ -1,4 +1,47 @@
-     
+## SMAA modification
+
+Inspired by the [FSMAA](https://github.com/lordbean-git/reshade-shaders/tree/main) modification by lordbean, disabling the rarely-needed depth pass by default. This depth pass incurs a noticable performance penalty (25%~ CPU & 10%~ GPU time on Reshade 6.3, R5 1600 and RX 6700) even when it's not in use. It can be re-enabled through Preprocessor settings if desired.
+
+* Depth costs performance regardless of it actually being used before this modification. Now user has the ability to enable or disable it through Preprocessor settings to their taste.
+* Comes with optimized defaults for best balance of image quality (IQ) and performance. 
+* Carefully tweaked predication settings to use best of both color/luma and depth edge detections for those seeking maximum IQ regardless of performance cost.
+* Edited descriptions with easier to understand, more practical counterparts.
+* SMAA is often the preferred solution to bad AA implementations, usually that of badly optimized games, so every bit of performance counts.
+* Note that this might be slower than the stock SMAA shader due to tweaked parameters, change `Edge Detection Threshold` to `0.1` for apples to apples comparison.
+* Optional preset included for a very decent AA+CAS combo.
+
+Note that your mileage may vary depending on your specs, game in question, resolution, shader stack etc., check Statistics tab in Reshade to compare performance difference between settings. You generally won't see a difference in FPS directly if you're already hitting your max. Less work on SMAA means more resources for other things, so it'll benefit your minimum FPS in the very least. It can be a few FPS difference in GPU limited/struggling systems.
+
+## Short guide
+
+You should use `Debug Output` in `View Weights` mode to see which areas have AA applied to them. Using this, tweak `Edge Detection Threshold` to your taste. It has a direct impact on IQ as well as performance.
+
+See "When to enable depth pass" below for predication settings and whether you need them at all.
+
+Use provided preset if you're lazy. More on this at Extras below.
+
+## When to enable depth pass
+
+Depth edge detection by itself is largely useless as it misses vast majority of edges in the scene, generally only highlighting outer edges of large objects, ignoring any fine aliasing in the details.
+
+Its main function is to be used in Predication, which allows you to blend either Color or Luma edge detection techniques together with Depth edge detection.
+
+This is useful for low contrast & visibility scenes with excessive amounts of transparency/postFX on the screen. Examples include : Desert with sandstorm, swamp with fog, heavy rain with fog, scene with washed-out or bleached colors with very little contrast. In these cases, normal edge detection methods might fail so it's feasible to enable Depth pass and use predication along with Color or Luminance based edge detection to have best of both worlds.
+
+Changing `SMAA_ENABLE_DEPTH_BUFFER` to `1` in Preprocessor definitions enables depth pass and predication that depends on it. You'll notice Predication is already enabled with already tweaked parameters. It is recommended to keep it as-is. Set `SMAA_ENABLE_DEPTH_BUFFER` back to `0` if you deem predication unnecessary to save performance. Among predication settings, you're encouraged to only change `Predication Scale` slightly. Use `View Weights` same as before to check if it does anything for your scene in particular.
+
+## Extras
+
+An optional preset is included (Drop it in reshade-presets folder) to make use of the following shaders with tweaked parameters: 
+CMAA from [Insane-Shaders](https://github.com/LordOfLunacy/Insane-Shaders/tree/master) > SMAA > FXAA > CAS
+
+I've found CMAA to be exceptionally good at smoothing stair-stepped edges (follow above link to download.) SMAA covers up what CMAA misses and a light amount of FXAA helps with shimmering during motion. Finally CAS is applied to selectively sharpen the image. This combination yields very good IQ, you may want to tweak FXAA subpixel to your taste (more or less blur to counteract shimmering.)
+
+It's recommended to use any color/contrast shaders before the AA shaders.
+
+
+## The original readme below
+
           .-.                   .  .---..   .
          (   )                 _|_ |     \ / 
           `-..  .    ._.-.  .-. |  |---   /  
